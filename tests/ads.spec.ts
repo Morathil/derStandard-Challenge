@@ -84,13 +84,11 @@ test.describe('Article & Ads', () => {
     for (let i = 0; i < currentAdContainerCount; i++) {
       const adContainer = adContainers.nth(i)
       const adContainerBoundingBox = await adContainer.boundingBox()
-      const positionFromTop = adContainerBoundingBox!.y
 
       if (adContainerBoundingBox && viewportSize) {
         if (i > 0) { // skip first
           const allowAbleViewportHeight = viewportSize.height - 100 // 100 scroll height
           const differenceToLastContainer = adContainerBoundingBox.y - lastY
-          console.log(differenceToLastContainer >= allowAbleViewportHeight, adContainerBoundingBox.y - lastY,  allowAbleViewportHeight)
           expect(differenceToLastContainer).toBeGreaterThan(allowAbleViewportHeight)
         }
         lastY = adContainerBoundingBox.y + adContainerBoundingBox.height

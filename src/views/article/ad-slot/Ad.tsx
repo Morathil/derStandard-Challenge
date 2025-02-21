@@ -20,6 +20,7 @@ const Ad: React.FC<AdProps> = ({ isVisible }) => {
   return (
     <Box
       ref={containerRef}
+      data-testid='adContainer'
       sx={{
         backgroundColor: 'lightgrey',
         minHeight: isSm ? adContainerMinHeight : window.innerHeight,

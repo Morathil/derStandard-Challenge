@@ -7,6 +7,9 @@ test.describe('Article & Ads', () => {
   test.beforeAll(async ({ browser }) => {
     const context = await browser.newContext();
     page = await context.newPage();
+    await page.route('**/*', async route => {
+      await route.continue();
+    });    
     await page.goto('http://localhost:8080/'); // Only visit once
   });
   
@@ -46,37 +49,53 @@ test.describe('Article & Ads', () => {
     var adSlotsCount = await adSlots.count()
 
     for (let i = 0; i < adSlotsCount; i++) {
-      await adSlots.nth(i).scrollIntoViewIfNeeded()
-      const visibleAds = await page.getByTestId('ad')
+      adSlots = page.getByTestId('ad-slot')
+      const currentAdSlot = adSlots.nth(i)
+      await currentAdSlot.scrollIntoViewIfNeeded()
+
+      const visibleAds = page.getByTestId('ad')
       const visibleAdsCount = await visibleAds.count()
+
       expect(visibleAdsCount).toBe(1)
     }
-  });
+  })
 
-  test('scroll to each paragraph => shows always 1 or 0 ad', async () => {
-    var paragraphs = page.locator('[data-testid^="paragraph"]')
-    var paragraphsCount = await paragraphs.count()
+  // due to scrolling jumps it can be a bit less than viewport size
+  test('scrolls to bottom => distances between ad container > ~viewport', async () => {
+    // Scroll to the bottom of the page smoothly (by 100px)
+    await page.evaluate(async () => {
+      const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+      for (let i = 0; i < document.body.scrollHeight; i += 100) {
+        window.scrollTo(0, i);
+        await delay(50);
+      }
+    });
 
-    for (let i = 0; i < paragraphsCount; i++) {
-      await paragraphs.nth(i).scrollIntoViewIfNeeded()
+    // scroll to top again to get correct viewport distances
+    await page.evaluate(() => {
+      return window.scroll(0,0);
+    });
 
-      var adSlots = page.getByTestId('ad-slot')
-      var adSlotsCount = await adSlots.count()
+    const viewportSize = await page.viewportSize()
+    const adContainers = page.getByTestId('adContainer')
+    const currentAdContainerCount = await adContainers.count()
+    let lastY = 0
 
-      const visibleAds = await page.getByTestId('ad')
-      const visibleAdsCount = await visibleAds.count()
+    for (let i = 0; i < currentAdContainerCount; i++) {
+      const adContainer = adContainers.nth(i)
+      const adContainerBoundingBox = await adContainer.boundingBox()
+      const positionFromTop = adContainerBoundingBox!.y
 
-      // if an ad slot is visible, 1 ad should be visible
-      if (adSlotsCount > 0) {
-        expect(visibleAdsCount).toBe(1)
-      } else {
-      // if no ad slot is visible, no ad should be visible
-        expect(visibleAdsCount).toBe(0)
+      if (adContainerBoundingBox && viewportSize) {
+        if (i > 0) { // skip first
+          const allowAbleViewportHeight = viewportSize.height - 100 // 100 scroll height
+          const differenceToLastContainer = adContainerBoundingBox.y - lastY
+          console.log(differenceToLastContainer >= allowAbleViewportHeight, adContainerBoundingBox.y - lastY,  allowAbleViewportHeight)
+          expect(differenceToLastContainer).toBeGreaterThan(allowAbleViewportHeight)
+        }
+        lastY = adContainerBoundingBox.y + adContainerBoundingBox.height
       }
     }
-  });
 
-
-  // jump from paragraph to paragraph and ensure 1 ad is shown or 0 if 0 slots are in viewport
+  })
 })
-

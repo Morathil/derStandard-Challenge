@@ -94,6 +94,5 @@ test.describe('Article & Ads', () => {
         lastY = adContainerBoundingBox.y + adContainerBoundingBox.height
       }
     }
-
   })
 })

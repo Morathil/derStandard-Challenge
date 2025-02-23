@@ -1,5 +1,5 @@
 export const ARTICLE: {
-  type: string
+  type: 'paragraph' | 'paragraphHeader' | 'image'
   text?: string
   url?: string
 }[] = [

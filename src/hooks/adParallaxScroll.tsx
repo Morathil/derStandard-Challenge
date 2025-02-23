@@ -8,30 +8,30 @@ interface AdParallaxScroll {
 }
 
 const adParallaxScroll = ({ containerRef, adRef }: AdParallaxScroll): number => {
-  const [offset, setOffset] = useState(0);
+  const [offset, setOffset] = useState(0)
 
   useEffect(() => {
     const handleScroll = () => {
-      if (!containerRef.current || !adRef.current) return;
+      if (!containerRef.current || !adRef.current) return
 
-      const rect = containerRef.current.getBoundingClientRect();
+      const rect = containerRef.current.getBoundingClientRect()
       const adRect = adRef.current.getBoundingClientRect()
-      const viewportCenter = window.innerHeight / 2;
-      const absoluteContainerCenter = rect.top + rect.height / 2;
-      const distanceFromCenter = absoluteContainerCenter - viewportCenter;
+      const viewportCenter = window.innerHeight / 2
+      const absoluteContainerCenter = rect.top + rect.height / 2
+      const distanceFromCenter = absoluteContainerCenter - viewportCenter
       
       const offsetValue = (distanceFromCenter * speedFactor - rect.height / 2 + adRect.height / 2) * -1
 
-      setOffset(offsetValue);
-    };
+      setOffset(offsetValue)
+    }
 
-    window.addEventListener('scroll', handleScroll);
-    handleScroll(); // Run once to set initial position
+    window.addEventListener('scroll', handleScroll)
+    handleScroll() // Run once to set initial position
 
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
-  return offset;
+  return offset
 }
 
 export default adParallaxScroll
